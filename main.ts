@@ -30,6 +30,7 @@ const paddleHeight = 150;
 let playerMoveUp = false;
 let playerMoveDown = false;
 const playerVelocity = 300;
+let paused = false;
 
 interface Vector2 {
 	x: number,
@@ -74,11 +75,14 @@ function drawGame(ctx: CanvasRenderingContext2D) {
 		drawRectangle(ctx, botPos, paddleWidth, paddleHeight, paddleColor);
 
 		// Title
-		const metrics = ctx.measureText("Pong");
-		const textWidth = metrics.width;
-		drawText(ctx, {
-			x: (windowWidth - textWidth) / 2, y: 69
-		}, "SuperPixel", 42, "Pong", "#fffafb");
+		//const titleWidth = ctx.measureText("Pong").width;
+		const pauseWidth = ctx.measureText("Pause").width;
+		//drawText(ctx, {
+		//x: (windowWidth - titleWidth) / 2, y: 69
+		//}, "SuperPixel", 42, "Pong", "#fffafb");
+		if (paused) {
+			drawText(ctx, {x: (windowWidth - pauseWidth) / 2, y: windowHeight / 2}, "SuperPixel", 30, "Pause", "#fffafb");
+		}
 	}
 }
 
@@ -86,40 +90,39 @@ let lastTime = performance.now();
 function gameLoop(now: number) {
 	const dt = (now - lastTime) / 1000;
 	lastTime = now;
+	if (windowWasResized) {
+		if (pong) {
+			pong.width = window.innerWidth;
+			pong.height = window.innerHeight;
+		}
+		windowWidth = window.innerWidth;
+		windowHeight = window.innerHeight;
+		playerPos.y = (windowHeight - paddleHeight) / 2;
+		botPos.x = windowWidth - paddleWidth - padding;
+		botPos.y = (windowHeight - paddleHeight) / 2;
+		windowWasResized = false;
+	}
 	if (ctx) {
-		if (ballPos.x + ballRadius >= windowWidth || ballPos.x - ballRadius <= 0) {
-			ballVelocity.x *= -1;
-		}
-		if (ballPos.y + ballRadius >= windowHeight || ballPos.y - ballRadius <= 0) {
-			ballVelocity.y *= -1;
-		}
-
-		// collision
-		// TODO
-		if (checkCollisionRecCircle(playerPos, paddleWidth, paddleHeight, ballPos, ballRadius)) {
-			ballVelocity.x *= -1;
-		}
-
-		ballPos.x += ballVelocity.x * dt;
-		ballPos.y += ballVelocity.y * dt;
-
-		if (windowWasResized) {
-			if (pong) {
-				pong.width = window.innerWidth;
-				pong.height = window.innerHeight;
+		if (!paused) {
+			if (ballPos.x + ballRadius >= windowWidth || ballPos.x - ballRadius <= 0) {
+				ballVelocity.x *= -1;
 			}
-			windowWidth = window.innerWidth;
-			windowHeight = window.innerHeight;
-			playerPos.y = (windowHeight - paddleHeight) / 2;
-			botPos.x = windowWidth - paddleWidth - padding;
-			botPos.y = (windowHeight - paddleHeight) / 2;
-			windowWasResized = false;
-		}
+			if (ballPos.y + ballRadius >= windowHeight || ballPos.y - ballRadius <= 0) {
+				ballVelocity.y *= -1;
+			}
 
-		if (playerMoveUp && playerPos.y > 0) {
-			playerPos.y -= playerVelocity * dt;
-		} else if (playerMoveDown && playerPos.y + paddleHeight < windowHeight) {
-			playerPos.y += playerVelocity * dt;
+			if (checkCollisionRecCircle(playerPos, paddleWidth, paddleHeight, ballPos, ballRadius)) {
+				ballVelocity.x *= -1;
+			}
+
+			ballPos.x += ballVelocity.x * dt;
+			ballPos.y += ballVelocity.y * dt;
+
+			if (playerMoveUp && playerPos.y > 0) {
+				playerPos.y -= playerVelocity * dt;
+			} else if (playerMoveDown && playerPos.y + paddleHeight < windowHeight) {
+				playerPos.y += playerVelocity * dt;
+			}
 		}
 		drawGame(ctx);
 	}
@@ -134,6 +137,12 @@ window.addEventListener("click", () => {
 window.addEventListener("resize", () => {
 	windowWasResized = true;
 });
+
+window.addEventListener("keypress", (e) => {
+	if (e.key === ' ') {
+		paused = !paused;
+	}
+})
 
 window.addEventListener("keydown", (e) => {
 	switch (e.key) {
