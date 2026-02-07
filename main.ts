@@ -26,10 +26,10 @@ const ballRadius = 10;
 let windowWasResized = false;
 const padding = 20;
 const paddleWidth = 10;
-const paddleHeight = 80;
+const paddleHeight = 150;
 let playerMoveUp = false;
 let playerMoveDown = false;
-const playerVelocity = 250;
+const playerVelocity = 300;
 
 interface Vector2 {
 	x: number,
@@ -92,6 +92,12 @@ function gameLoop(now: number) {
 		}
 		if (ballPos.y + ballRadius >= windowHeight || ballPos.y - ballRadius <= 0) {
 			ballVelocity.y *= -1;
+		}
+
+		// collision
+		// TODO
+		if (checkCollisionRecCircle(playerPos, paddleWidth, paddleHeight, ballPos, ballRadius)) {
+			ballVelocity.x *= -1;
 		}
 
 		ballPos.x += ballVelocity.x * dt;
@@ -178,4 +184,23 @@ function drawText(ctx: CanvasRenderingContext2D, pos: Vector2, fontFamily: strin
 	ctx.fillStyle = color;
 	ctx.font = font;
 	ctx.fillText(text, pos.x, pos.y);
+}
+
+function checkCollisionRecCircle(recPos: Vector2, recWidth: number, recHeight: number, circlePos: Vector2, circleRadius: number): boolean {
+	const recCenter: Vector2 = {
+		x: recPos.x + (recWidth / 2),
+		y: recPos.y + (recHeight / 2)
+	};
+	const dx = Math.abs(recCenter.x - circlePos.x);
+	const dy = Math.abs(recCenter.y - circlePos.y);
+
+	if (dx > (recWidth / 2 + circleRadius)) return (false);
+	if (dy > (recHeight / 2 + circleRadius)) return (false);
+
+	if (dx <= (recWidth / 2)) return (true);
+	if (dy <= (recHeight / 2)) return (true);
+
+	const cornerDistanceSq = (dx - recWidth / 2) ** 2 + (dy - recHeight / 2) ** 2;
+
+	return cornerDistanceSq <= (circleRadius * circleRadius);
 }
