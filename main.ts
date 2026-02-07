@@ -105,16 +105,16 @@ function gameLoop(now: number) {
 			windowWasResized = false;
 		}
 
-		if (playerMoveUp) {
+		if (playerMoveUp && playerPos.y > 0) {
 			playerPos.y -= playerVelocity * dt;
-		} else if (playerMoveDown) {
+		} else if (playerMoveDown && playerPos.y + paddleHeight < windowHeight) {
 			playerPos.y += playerVelocity * dt;
 		}
 		drawGame(ctx);
 	}
 	requestAnimationFrame(gameLoop);
 }
-//requestAnimationFrame(gameLoop);
+requestAnimationFrame(gameLoop);
 
 window.addEventListener("resize", () => {
 	windowWasResized = true;
