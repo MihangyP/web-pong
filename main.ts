@@ -11,7 +11,6 @@ if (ctx == null) {
 pong.width = window.innerWidth;
 pong.height = window.innerHeight;
 
-
 windowWidth = ctx.canvas.width;
 windowHeight = ctx.canvas.height;
 
@@ -23,6 +22,9 @@ let windowWasResized = false;
 const padding = 20;
 const paddleWidth = 10;
 const paddleHeight = 80;
+let playerMoveUp = false;
+let playerMoveDown = false;
+const playerVelocity = 250;
 
 interface Vector2 {
 	x: number,
@@ -95,6 +97,12 @@ function gameLoop(now: number) {
 			botPos.y = (windowHeight - paddleHeight) / 2;
 			windowWasResized = false;
 		}
+
+		if (playerMoveUp) {
+			playerPos.y -= playerVelocity * dt;
+		} else if (playerMoveDown) {
+			playerPos.y += playerVelocity * dt;
+		}
 		drawGame(ctx);
 	}
 	requestAnimationFrame(gameLoop);
@@ -104,6 +112,28 @@ requestAnimationFrame(gameLoop);
 window.addEventListener("resize", () => {
 	windowWasResized = true;
 });
+
+window.addEventListener("keydown", (e) => {
+	switch (e.key) {
+		case 'w': {
+			playerMoveUp = true;
+		} break;
+		case 's': {
+			playerMoveDown = true;
+		} break;
+	}
+})
+
+window.addEventListener("keyup", (e) => {
+	switch (e.key) {
+		case 'w': {
+			playerMoveUp = false;
+		} break;
+		case 's': {
+			playerMoveDown = false;
+		} break;
+	}
+})
 
 function drawRectangle(ctx: CanvasRenderingContext2D, pos: Vector2, width: number, height: number, color: string) {
 	ctx.beginPath();
