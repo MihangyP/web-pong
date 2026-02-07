@@ -17,8 +17,12 @@ windowHeight = ctx.canvas.height;
 
 const lineColor = "#fffafb";
 const ballColor = "#7de2d1";
+const paddleColor = "#339989";
 const ballRadius = 10;
 let windowWasResized = false;
+const padding = 20;
+const paddleWidth = 10;
+const paddleHeight = 80;
 
 interface Vector2 {
 	x: number,
@@ -35,7 +39,18 @@ let ballVelocity: Vector2 = {
 	y: 300,
 }
 
+let playerPos: Vector2 = {
+	x: padding,
+	y: (windowHeight - paddleHeight) / 2,
+}
+
+let botPos: Vector2 = {
+	x: windowWidth - paddleWidth - padding,
+	y: (windowHeight - paddleHeight) / 2,
+}
+
 function drawGame(ctx: CanvasRenderingContext2D) {
+	ctx.clearRect(0, 0, windowWidth, windowHeight);
 	if (pong) {
 		// platform
 		drawLine(ctx, {x: windowWidth / 2, y: 0}, {x: windowWidth / 2, y: windowHeight}, lineColor);
@@ -45,13 +60,15 @@ function drawGame(ctx: CanvasRenderingContext2D) {
 		drawLine(ctx, {x: 0, y: windowHeight}, {x: windowWidth, y: windowHeight}, lineColor);
 
 		// ball
-
 		drawCircle(ctx, ballPos, ballRadius, ballColor);
+
+		// paddles 
+		drawRectangle(ctx, playerPos, paddleWidth, paddleHeight, paddleColor);
+		drawRectangle(ctx, botPos, paddleWidth, paddleHeight, paddleColor);
 	}
 }
 
 let lastTime = performance.now();
-console.log(lastTime);
 function gameLoop(now: number) {
 	const dt = (now - lastTime) / 1000;
 	lastTime = now;
@@ -62,8 +79,10 @@ function gameLoop(now: number) {
 		if (ballPos.y + ballRadius >= windowHeight || ballPos.y - ballRadius <= 0) {
 			ballVelocity.y *= -1;
 		}
+
 		ballPos.x += ballVelocity.x * dt;
 		ballPos.y += ballVelocity.y * dt;
+
 		if (windowWasResized) {
 			if (pong) {
 				pong.width = window.innerWidth;
@@ -71,9 +90,11 @@ function gameLoop(now: number) {
 			}
 			windowWidth = window.innerWidth;
 			windowHeight = window.innerHeight;
+			playerPos.y = (windowHeight - paddleHeight) / 2;
+			botPos.x = windowWidth - paddleWidth - padding;
+			botPos.y = (windowHeight - paddleHeight) / 2;
 			windowWasResized = false;
 		}
-		ctx.clearRect(0, 0, windowWidth, windowHeight);
 		drawGame(ctx);
 	}
 	requestAnimationFrame(gameLoop);
