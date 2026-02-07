@@ -67,6 +67,13 @@ function drawGame(ctx: CanvasRenderingContext2D) {
 		// paddles 
 		drawRectangle(ctx, playerPos, paddleWidth, paddleHeight, paddleColor);
 		drawRectangle(ctx, botPos, paddleWidth, paddleHeight, paddleColor);
+
+		// Title
+		const metrics = ctx.measureText("Pong");
+		const textWidth = metrics.width;
+		drawText(ctx, {
+			x: (windowWidth - textWidth) / 2, y: 69
+		}, "SuperPixel", 42, "Pong", "#fffafb");
 	}
 }
 
@@ -107,7 +114,7 @@ function gameLoop(now: number) {
 	}
 	requestAnimationFrame(gameLoop);
 }
-requestAnimationFrame(gameLoop);
+//requestAnimationFrame(gameLoop);
 
 window.addEventListener("resize", () => {
 	windowWasResized = true;
@@ -155,4 +162,11 @@ function drawLine(ctx: CanvasRenderingContext2D, startPos: Vector2, endPos: Vect
 	ctx.moveTo(startPos.x, startPos.y);
 	ctx.lineTo(endPos.x, endPos.y);
 	ctx.stroke();
+}
+
+function drawText(ctx: CanvasRenderingContext2D, pos: Vector2, fontFamily: string, fontSize: number, text: string, color: string) {
+	const font = fontSize.toString() + "px " + fontFamily;
+	ctx.fillStyle = color;
+	ctx.font = font;
+	ctx.fillText(text, pos.x, pos.y);
 }
