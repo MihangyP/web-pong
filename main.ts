@@ -1,3 +1,5 @@
+let windowWidth: number;
+let windowHeight: number;
 const pong = document.getElementById("pong") as HTMLCanvasElement | null;
 if (pong == null) {
 	throw new Error("No element with the id 'pong'");
@@ -6,22 +8,81 @@ const ctx = pong.getContext("2d");
 if (ctx == null) {
 	throw new Error("Cannot support 2d platform");
 }
+pong.width = window.innerWidth;
+pong.height = window.innerHeight;
 
-resize();
+
+windowWidth = ctx.canvas.width;
+windowHeight = ctx.canvas.height;
+
+const lineColor = "#fffafb";
+const ballColor = "#7de2d1";
+const ballRadius = 10;
+let windowWasResized = false;
 
 interface Vector2 {
 	x: number,
 	y: number,
 }
 
-window.addEventListener("resize", resize);
+let ballPos: Vector2 = {
+	x: windowWidth / 2,
+	y: windowHeight / 2,
+}
 
-function resize() {
-	if (pong != null) {
-		pong.width = window.innerWidth;
-		pong.height = window.innerHeight;
+let ballVelocity: Vector2 = {
+	x: 300,
+	y: 300,
+}
+
+function drawGame(ctx: CanvasRenderingContext2D) {
+	if (pong) {
+		// platform
+		drawLine(ctx, {x: windowWidth / 2, y: 0}, {x: windowWidth / 2, y: windowHeight}, lineColor);
+		drawLine(ctx, {x: 0, y: 0}, {x: 0, y: windowHeight}, lineColor);
+		drawLine(ctx, {x: windowWidth, y: 0}, {x: windowWidth, y: windowHeight}, lineColor);
+		drawLine(ctx, {x: 0, y: 0}, {x: windowWidth, y: 0}, lineColor);
+		drawLine(ctx, {x: 0, y: windowHeight}, {x: windowWidth, y: windowHeight}, lineColor);
+
+		// ball
+
+		drawCircle(ctx, ballPos, ballRadius, ballColor);
 	}
 }
+
+let lastTime = performance.now();
+console.log(lastTime);
+function gameLoop(now: number) {
+	const dt = (now - lastTime) / 1000;
+	lastTime = now;
+	if (ctx) {
+		if (ballPos.x + ballRadius >= windowWidth || ballPos.x - ballRadius <= 0) {
+			ballVelocity.x *= -1;
+		}
+		if (ballPos.y + ballRadius >= windowHeight || ballPos.y - ballRadius <= 0) {
+			ballVelocity.y *= -1;
+		}
+		ballPos.x += ballVelocity.x * dt;
+		ballPos.y += ballVelocity.y * dt;
+		if (windowWasResized) {
+			if (pong) {
+				pong.width = window.innerWidth;
+				pong.height = window.innerHeight;
+			}
+			windowWidth = window.innerWidth;
+			windowHeight = window.innerHeight;
+			windowWasResized = false;
+		}
+		ctx.clearRect(0, 0, windowWidth, windowHeight);
+		drawGame(ctx);
+	}
+	requestAnimationFrame(gameLoop);
+}
+requestAnimationFrame(gameLoop);
+
+window.addEventListener("resize", () => {
+	windowWasResized = true;
+});
 
 function drawRectangle(ctx: CanvasRenderingContext2D, pos: Vector2, width: number, height: number, color: string) {
 	ctx.beginPath();
