@@ -14,6 +14,11 @@ pong.height = window.innerHeight;
 windowWidth = ctx.canvas.width;
 windowHeight = ctx.canvas.height;
 
+const bo = new Audio("./bo.mp3");
+bo.preload = "auto";
+bo.loop = true;
+bo.volume = 0.3;
+
 const lineColor = "#fffafb";
 const ballColor = "#7de2d1";
 const paddleColor = "#339989";
@@ -115,6 +120,10 @@ function gameLoop(now: number) {
 	requestAnimationFrame(gameLoop);
 }
 requestAnimationFrame(gameLoop);
+
+window.addEventListener("click", () => {
+	bo.play();
+}, {once: true})
 
 window.addEventListener("resize", () => {
 	windowWasResized = true;
