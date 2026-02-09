@@ -81,8 +81,9 @@ function drawGame(ctx: CanvasRenderingContext2D) {
 
 		// Pause
 		if (paused) {
-			const pauseWidth = ctx.measureText("Pause").width;
-			drawText(ctx, {x: (windowWidth - pauseWidth) / 2, y: windowHeight / 2}, "SuperPixel", 30, "Pause", "#fffafb");
+			drawText(ctx, {
+				x: windowWidth / 2, y: windowHeight / 2
+			}, "SuperPixel", 30, "Pause", "#fffafb");
 		}
 	}
 }
@@ -173,7 +174,10 @@ document.fonts.ready.then(() => {
 });
 
 window.addEventListener("click", () => {
-	bo.play();
+	if (currentScreen === 'game') {
+		console.log(currentScreen);
+		bo.play();
+	}
 }, {once: true})
 
 window.addEventListener("resize", () => {
@@ -183,17 +187,11 @@ window.addEventListener("resize", () => {
 window.addEventListener("keypress", (e) => {
 	if (e.code === 'Space' && currentScreen === 'game') {
 		paused = !paused;
+		if (paused)
+			bo.pause();
+		else
+			bo.play();
 	}
-	// TODO: implement later
-	//if (e.code === 'KeyT') { // toggleSreen
-	//if (currentScreen === 'menu') {
-	//currentScreen = 'game';
-	//playGame(ctx);
-	//} else if (currentScreen == 'game') {
-	//currentScreen = 'menu';
-	//drawMenu(ctx);
-	//}
-	//}
 	if (e.code === 'Enter' && currentScreen === 'menu') {
 		switch (menuItemFocus) {
 			case 0: { // Solo
@@ -261,6 +259,7 @@ function drawLine(ctx: CanvasRenderingContext2D, startPos: Vector2, endPos: Vect
 	ctx.strokeStyle = color;
 	ctx.moveTo(startPos.x, startPos.y);
 	ctx.lineTo(endPos.x, endPos.y);
+	ctx.lineWidth = 4;
 	ctx.stroke();
 }
 
