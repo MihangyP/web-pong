@@ -34,6 +34,8 @@ const paddleWidth = 10;
 const paddleHeight = 150;
 let playerMoveUp = false;
 let playerMoveDown = false;
+let playerMoveRight = false;
+let playerMoveLeft = false;
 const playerVelocity = 300;
 let paused = false;
 
@@ -63,13 +65,17 @@ let botPos = {
 	y: (windowHeight - paddleHeight) / 2,
 }
 
+let leftLineColor = lineColor;
+let rightLineColor = lineColor;
 function drawGame(ctx: CanvasRenderingContext2D) {
 	ctx.clearRect(0, 0, windowWidth, windowHeight);
 	if (pong) {
 		// platform
 		drawLine(ctx, {x: windowWidth / 2, y: 0}, {x: windowWidth / 2, y: windowHeight}, lineColor);
-		drawLine(ctx, {x: 0, y: 0}, {x: 0, y: windowHeight}, lineColor);
-		drawLine(ctx, {x: windowWidth, y: 0}, {x: windowWidth, y: windowHeight}, lineColor);
+		// left Line
+		drawLine(ctx, {x: 0, y: 0}, {x: 0, y: windowHeight}, leftLineColor);
+		// right Line
+		drawLine(ctx, {x: windowWidth, y: 0}, {x: windowWidth, y: windowHeight}, rightLineColor);
 		drawLine(ctx, {x: 0, y: 0}, {x: windowWidth, y: 0}, lineColor);
 		drawLine(ctx, {x: 0, y: windowHeight}, {x: windowWidth, y: windowHeight}, lineColor);
 
@@ -99,8 +105,8 @@ let menuItemFocus = 0;
 function drawMenu(ctx: CanvasRenderingContext2D) {
 	const TITLE_PADDING_TOP = 169;
 	const TITLE_PADDING_BOTTOM = 200;
-	const ITEM_GAP = 96;
-	const menuFont = "JetBrains Mono"
+	const ITEM_GAP = 120;
+	const menuFont = "SuperPixel"
 
 	bo.pause();
 	ctx.clearRect(0, 0, windowWidth, windowHeight);
@@ -117,7 +123,10 @@ function drawMenu(ctx: CanvasRenderingContext2D) {
 
 function playGame(ctx: CanvasRenderingContext2D, dt: number) {
 	if (!paused) {
-		if (ballPos.x + ballRadius >= windowWidth || ballPos.x - ballRadius <= 0) {
+		if (ballPos.x + ballRadius >= windowWidth) {
+			ballVelocity.x *= -1;
+		}
+		if (ballPos.x - ballRadius <= 0) {
 			ballVelocity.x *= -1;
 		}
 		if (ballPos.y + ballRadius >= windowHeight || ballPos.y - ballRadius <= 0) {
@@ -135,6 +144,10 @@ function playGame(ctx: CanvasRenderingContext2D, dt: number) {
 			playerPos.y -= playerVelocity * dt;
 		} else if (playerMoveDown && playerPos.y + paddleHeight < windowHeight) {
 			playerPos.y += playerVelocity * dt;
+		} else if (playerMoveLeft && playerPos.x > 0) {
+			playerPos.x -= playerVelocity * dt;
+		} else if (playerMoveRight && playerPos.x + paddleWidth < windowWidth / 2) {
+			playerPos.x += playerVelocity * dt;
 		}
 	}
 	drawGame(ctx);
@@ -225,6 +238,12 @@ window.addEventListener("keydown", (e) => {
 		case 'KeyS': {
 			playerMoveDown = true;
 		} break;
+		case 'KeyD': {
+			playerMoveRight = true;
+		} break;
+		case 'KeyA': {
+			playerMoveLeft = true;
+		} break;
 		case 'ArrowUp': {
 			if (menuItemFocus == 0) menuItemFocus = 2;
 			else menuItemFocus -= 1;
@@ -245,6 +264,12 @@ window.addEventListener("keyup", (e) => {
 		} break;
 		case 'KeyS': {
 			playerMoveDown = false;
+		} break;
+		case 'KeyD': {
+			playerMoveRight = false;
+		} break;
+		case 'KeyA': {
+			playerMoveLeft = false;
 		} break;
 	}
 })
