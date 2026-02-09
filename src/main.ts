@@ -14,6 +14,10 @@ pong.height = window.innerHeight;
 windowWidth = ctx.canvas.width;
 windowHeight = ctx.canvas.height;
 
+type PongScreen = 'menu' | 'game';
+
+let actualScreen: PongScreen = 'menu';
+
 const bo = new Audio("./bo.mp3");
 bo.preload = "auto";
 bo.loop = true;
@@ -89,12 +93,10 @@ function drawMenu(ctx: CanvasRenderingContext2D) {
 	const ITEM_GAP = 96;
 
 	const items: string[] = [
-		"Resume",
+		"Solo",
 		"Multiplayer",
 		"Toogle sound [on]",
-		"Quit",
 	];
-	drawCircle(ctx, {x: windowWidth / 2, y: windowHeight / 2}, 30, "red");
 	drawTextCenterX(ctx, {x: windowWidth / 2, y: TITLE_PADDING_TOP}, "SuperPixel", 100, "Pong", "#7de2d1");
 	let itemPosY = TITLE_PADDING_TOP + TITLE_PADDING_BOTTOM;
 	items.forEach((item, i) => {
@@ -145,8 +147,16 @@ function gameLoop(now: number) {
 	requestAnimationFrame(gameLoop);
 }
 
-drawMenu(ctx);
-//requestAnimationFrame(gameLoop);
+function playGame() {
+	requestAnimationFrame(gameLoop);
+}
+
+// drawwww
+if (actualScreen === 'menu') {
+	drawMenu(ctx);
+} else if (actualScreen === 'game') {
+	playGame();
+}
 
 window.addEventListener("click", () => {
 	bo.play();
