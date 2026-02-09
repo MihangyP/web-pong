@@ -23,6 +23,7 @@ bo.preload = "auto";
 bo.loop = true;
 bo.volume = 0.3;
 
+let hasSound = true;
 const lineColor = "#fffafb";
 const ballColor = "#7de2d1";
 const paddleColor = "#339989";
@@ -91,7 +92,7 @@ function drawGame(ctx: CanvasRenderingContext2D) {
 const menuItems: string[] = [
 	"Solo",
 	"Multiplayer",
-	"Toogle sound [on]",
+	"Toggle Sound [on]",
 ];
 let menuItemFocus = 0;
 
@@ -101,6 +102,7 @@ function drawMenu(ctx: CanvasRenderingContext2D) {
 	const ITEM_GAP = 96;
 	const menuFont = "JetBrains Mono"
 
+	bo.pause();
 	ctx.clearRect(0, 0, windowWidth, windowHeight);
 	drawTextCenterX(ctx, {x: windowWidth / 2, y: TITLE_PADDING_TOP}, menuFont, 100, "Pong", "#7de2d1");
 	let itemPosY = TITLE_PADDING_TOP + TITLE_PADDING_BOTTOM;
@@ -181,7 +183,7 @@ window.addEventListener("keypress", (e) => {
 		paused = !paused;
 		if (paused)
 			bo.pause();
-		else
+		else if (hasSound)
 			bo.play();
 	}
 	if (e.code === 'KeyT') { // toggle menu
@@ -191,6 +193,7 @@ window.addEventListener("keypress", (e) => {
 		}
 		else if (currentScreen === 'menu') currentScreen = 'game';
 	}
+	// Action on Menu items
 	if (e.code === 'Enter' && currentScreen === 'menu') {
 		switch (menuItemFocus) {
 			case 0: { // Solo
@@ -200,7 +203,15 @@ window.addEventListener("keypress", (e) => {
 				// TODO
 			} break;
 			case 2: { // Toogle sound
-				// TODO
+				if (hasSound) {
+					bo.pause();
+					bo.currentTime = 0;
+					menuItems[2] = "Toggle Sound [off]";
+					hasSound = false;
+				} else {
+					menuItems[2] = "Toggle Sound [on]"
+					hasSound = true;
+				}
 			}
 		}
 	}
