@@ -113,6 +113,31 @@ function drawMenu(ctx: CanvasRenderingContext2D) {
 	})
 }
 
+function playGame(ctx: CanvasRenderingContext2D, dt: number) {
+	if (!paused) {
+		if (ballPos.x + ballRadius >= windowWidth || ballPos.x - ballRadius <= 0) {
+			ballVelocity.x *= -1;
+		}
+		if (ballPos.y + ballRadius >= windowHeight || ballPos.y - ballRadius <= 0) {
+			ballVelocity.y *= -1;
+		}
+
+		if (checkCollisionRecCircle(playerPos, paddleWidth, paddleHeight, ballPos, ballRadius)) {
+			ballVelocity.x *= -1;
+		}
+
+		ballPos.x += ballVelocity.x * dt;
+		ballPos.y += ballVelocity.y * dt;
+
+		if (playerMoveUp && playerPos.y > 0) {
+			playerPos.y -= playerVelocity * dt;
+		} else if (playerMoveDown && playerPos.y + paddleHeight < windowHeight) {
+			playerPos.y += playerVelocity * dt;
+		}
+	}
+	drawGame(ctx);
+}
+
 let lastTime = performance.now();
 function gameLoop(now: number) {
 	const dt = (now - lastTime) / 1000;
@@ -130,52 +155,19 @@ function gameLoop(now: number) {
 		windowWasResized = false;
 	}
 	if (ctx) {
-		if (!paused) {
-			if (ballPos.x + ballRadius >= windowWidth || ballPos.x - ballRadius <= 0) {
-				ballVelocity.x *= -1;
-			}
-			if (ballPos.y + ballRadius >= windowHeight || ballPos.y - ballRadius <= 0) {
-				ballVelocity.y *= -1;
-			}
-
-			if (checkCollisionRecCircle(playerPos, paddleWidth, paddleHeight, ballPos, ballRadius)) {
-				ballVelocity.x *= -1;
-			}
-
-			ballPos.x += ballVelocity.x * dt;
-			ballPos.y += ballVelocity.y * dt;
-
-			if (playerMoveUp && playerPos.y > 0) {
-				playerPos.y -= playerVelocity * dt;
-			} else if (playerMoveDown && playerPos.y + paddleHeight < windowHeight) {
-				playerPos.y += playerVelocity * dt;
-			}
-		}
-		drawGame(ctx);
+		if (currentScreen === 'game')
+			playGame(ctx, dt);
+		else if (currentScreen === 'menu')
+			drawMenu(ctx);
 	}
 	requestAnimationFrame(gameLoop);
 }
-
-function playGame(ctx: CanvasRenderingContext2D) {
-	ctx.clearRect(0, 0, windowWidth, windowHeight);
-	requestAnimationFrame(gameLoop);
-}
-
-function start(ctx: CanvasRenderingContext2D) {
-	if (currentScreen === 'menu') {
-		drawMenu(ctx);
-	} else if (currentScreen === 'game') {
-		playGame(ctx);
-	}
-}
-
-document.fonts.ready.then(() => {
-	start(ctx);
-});
+requestAnimationFrame(gameLoop);
 
 window.addEventListener("click", () => {
 	if (currentScreen === 'game') {
 		console.log(currentScreen);
+		ctx.lineWidth = 4;
 		bo.play();
 	}
 }, {once: true})
@@ -192,11 +184,17 @@ window.addEventListener("keypress", (e) => {
 		else
 			bo.play();
 	}
+	if (e.code === 'KeyT') { // toggle menu
+		if (currentScreen === 'game') {
+			currentScreen = 'menu';
+			paused = true;
+		}
+		else if (currentScreen === 'menu') currentScreen = 'game';
+	}
 	if (e.code === 'Enter' && currentScreen === 'menu') {
 		switch (menuItemFocus) {
 			case 0: { // Solo
 				currentScreen = 'game';
-				playGame(ctx);
 			} break;
 			case 1: { // Multiplayer
 				// TODO
