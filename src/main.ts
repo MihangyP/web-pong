@@ -16,7 +16,7 @@ windowHeight = ctx.canvas.height;
 
 type PongScreen = 'menu' | 'game';
 
-let actualScreen: PongScreen = 'menu';
+let currentScreen: PongScreen = 'menu';
 
 const bo = new Audio("./bo.mp3");
 bo.preload = "auto";
@@ -87,20 +87,27 @@ function drawGame(ctx: CanvasRenderingContext2D) {
 	}
 }
 
+const menuItems: string[] = [
+	"Solo",
+	"Multiplayer",
+	"Toogle sound [on]",
+];
+let menuItemFocus = 0;
+
 function drawMenu(ctx: CanvasRenderingContext2D) {
 	const TITLE_PADDING_TOP = 169;
-	const TITLE_PADDING_BOTTOM = 131;
+	const TITLE_PADDING_BOTTOM = 200;
 	const ITEM_GAP = 96;
+	const menuFont = "JetBrains Mono"
 
-	const items: string[] = [
-		"Solo",
-		"Multiplayer",
-		"Toogle sound [on]",
-	];
-	drawTextCenterX(ctx, {x: windowWidth / 2, y: TITLE_PADDING_TOP}, "SuperPixel", 100, "Pong", "#7de2d1");
+	drawTextCenterX(ctx, {x: windowWidth / 2, y: TITLE_PADDING_TOP}, menuFont, 100, "Pong", "#7de2d1");
 	let itemPosY = TITLE_PADDING_TOP + TITLE_PADDING_BOTTOM;
-	items.forEach((item, i) => {
-		drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, "SuperPixel", 69, item, "#fffafb");
+	menuItems.forEach((item, i) => {
+		if (i === menuItemFocus) {
+			drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, menuFont, 69, item, "#339989");
+		} else {
+			drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, menuFont, 69, item, "#fffafb");
+		}
 	})
 }
 
@@ -151,12 +158,17 @@ function playGame() {
 	requestAnimationFrame(gameLoop);
 }
 
-// drawwww
-if (actualScreen === 'menu') {
-	drawMenu(ctx);
-} else if (actualScreen === 'game') {
-	playGame();
+function start(ctx: CanvasRenderingContext2D) {
+	if (currentScreen === 'menu') {
+		drawMenu(ctx);
+	} else if (currentScreen === 'game') {
+		playGame();
+	}
 }
+
+document.fonts.ready.then(() => {
+	start(ctx);
+});
 
 window.addEventListener("click", () => {
 	bo.play();
@@ -167,8 +179,13 @@ window.addEventListener("resize", () => {
 });
 
 window.addEventListener("keypress", (e) => {
-	if (e.key === ' ') {
+	if (e.code === 'Space') {
 		paused = !paused;
+	}
+	if (e.code === 'Enter' && currentScreen === 'menu') {
+		if (menuItemFocus === 0) {
+			playGame();
+		}
 	}
 })
 
@@ -179,6 +196,18 @@ window.addEventListener("keydown", (e) => {
 		} break;
 		case 'KeyS': {
 			playerMoveDown = true;
+		} break;
+		case 'ArrowUp': {
+			if (menuItemFocus == 0) menuItemFocus = 2;
+			else menuItemFocus -= 1;
+			ctx.clearRect(0, 0, windowWidth, windowHeight);
+			drawMenu(ctx);
+		} break;
+		case 'ArrowDown': {
+			if (menuItemFocus == 2) menuItemFocus = 0;
+			else menuItemFocus += 1;
+			ctx.clearRect(0, 0, windowWidth, windowHeight);
+			drawMenu(ctx);
 		} break;
 	}
 })
