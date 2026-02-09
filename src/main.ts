@@ -37,23 +37,23 @@ interface Vector2 {
 	y: number,
 }
 
-let ballPos: Vector2 = {
+let ballPos = {
 	x: windowWidth / 2,
 	y: windowHeight / 2
 }
 
 const ballSpeed = 400;
-let ballVelocity: Vector2 = {
+let ballVelocity = {
 	x: ballSpeed,
 	y: ballSpeed
 }
 
-let playerPos: Vector2 = {
+let playerPos = {
 	x: padding,
 	y: (windowHeight - paddleHeight) / 2,
 }
 
-let botPos: Vector2 = {
+let botPos = {
 	x: windowWidth - paddleWidth - padding,
 	y: (windowHeight - paddleHeight) / 2,
 }
@@ -81,6 +81,25 @@ function drawGame(ctx: CanvasRenderingContext2D) {
 			drawText(ctx, {x: (windowWidth - pauseWidth) / 2, y: windowHeight / 2}, "SuperPixel", 30, "Pause", "#fffafb");
 		}
 	}
+}
+
+function drawMenu(ctx: CanvasRenderingContext2D) {
+	const TITLE_PADDING_TOP = 169;
+	const TITLE_PADDING_BOTTOM = 131;
+	const ITEM_GAP = 96;
+
+	const items: string[] = [
+		"Resume",
+		"Multiplayer",
+		"Toogle sound [on]",
+		"Quit",
+	];
+	drawCircle(ctx, {x: windowWidth / 2, y: windowHeight / 2}, 30, "red");
+	drawTextCenterX(ctx, {x: windowWidth / 2, y: TITLE_PADDING_TOP}, "SuperPixel", 100, "Pong", "#7de2d1");
+	let itemPosY = TITLE_PADDING_TOP + TITLE_PADDING_BOTTOM;
+	items.forEach((item, i) => {
+		drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, "SuperPixel", 69, item, "#fffafb");
+	})
 }
 
 let lastTime = performance.now();
@@ -125,7 +144,9 @@ function gameLoop(now: number) {
 	}
 	requestAnimationFrame(gameLoop);
 }
-requestAnimationFrame(gameLoop);
+
+drawMenu(ctx);
+//requestAnimationFrame(gameLoop);
 
 window.addEventListener("click", () => {
 	bo.play();
@@ -189,6 +210,14 @@ function drawText(ctx: CanvasRenderingContext2D, pos: Vector2, fontFamily: strin
 	const font = fontSize.toString() + "px " + fontFamily;
 	ctx.fillStyle = color;
 	ctx.font = font;
+	ctx.fillText(text, pos.x, pos.y);
+}
+
+function drawTextCenterX(ctx: CanvasRenderingContext2D, pos: Vector2, fontFamily: string, fontSize: number, text: string, color: string) {
+	const font = fontSize.toString() + "px " + fontFamily;
+	ctx.fillStyle = color;
+	ctx.font = font;
+	ctx.textAlign = "center";
 	ctx.fillText(text, pos.x, pos.y);
 }
 

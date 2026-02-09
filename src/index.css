@@ -1,4 +1,4 @@
-@ont-face {
+@font-face {
 	font-family: 'SuperPixel';
 	src: url('SuperPixel.ttf');
 }
@@ -15,4 +15,8 @@ html, body {
 	height: 100vh;
 	background-color: #242424;
 	display: block;
+}
+
+h1 {
+	font-family: "SuperPixel";
 }

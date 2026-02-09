@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsc --watch main.ts"
+    "dev": "tsc --watch src/main.ts"
   },
   "keywords": [],
   "author": "",
