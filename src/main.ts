@@ -39,12 +39,13 @@ interface Vector2 {
 
 let ballPos: Vector2 = {
 	x: windowWidth / 2,
-	y: windowHeight / 2,
+	y: windowHeight / 2
 }
 
+const ballSpeed = 400;
 let ballVelocity: Vector2 = {
-	x: 300,
-	y: 300,
+	x: ballSpeed,
+	y: ballSpeed
 }
 
 let playerPos: Vector2 = {
@@ -74,13 +75,9 @@ function drawGame(ctx: CanvasRenderingContext2D) {
 		drawRectangle(ctx, playerPos, paddleWidth, paddleHeight, paddleColor);
 		drawRectangle(ctx, botPos, paddleWidth, paddleHeight, paddleColor);
 
-		// Title
-		//const titleWidth = ctx.measureText("Pong").width;
-		const pauseWidth = ctx.measureText("Pause").width;
-		//drawText(ctx, {
-		//x: (windowWidth - titleWidth) / 2, y: 69
-		//}, "SuperPixel", 42, "Pong", "#fffafb");
+		// Pause
 		if (paused) {
+			const pauseWidth = ctx.measureText("Pause").width;
 			drawText(ctx, {x: (windowWidth - pauseWidth) / 2, y: windowHeight / 2}, "SuperPixel", 30, "Pause", "#fffafb");
 		}
 	}
@@ -145,22 +142,22 @@ window.addEventListener("keypress", (e) => {
 })
 
 window.addEventListener("keydown", (e) => {
-	switch (e.key) {
-		case 'w': {
+	switch (e.code) {
+		case 'KeyW': {
 			playerMoveUp = true;
 		} break;
-		case 's': {
+		case 'KeyS': {
 			playerMoveDown = true;
 		} break;
 	}
 })
 
 window.addEventListener("keyup", (e) => {
-	switch (e.key) {
-		case 'w': {
+	switch (e.code) {
+		case 'KeyW': {
 			playerMoveUp = false;
 		} break;
-		case 's': {
+		case 'KeyS': {
 			playerMoveDown = false;
 		} break;
 	}
@@ -200,16 +197,17 @@ function checkCollisionRecCircle(recPos: Vector2, recWidth: number, recHeight: n
 		x: recPos.x + (recWidth / 2),
 		y: recPos.y + (recHeight / 2)
 	};
-	const dx = Math.abs(recCenter.x - circlePos.x);
-	const dy = Math.abs(recCenter.y - circlePos.y);
+	const delta: Vector2 = {
+		x: Math.abs(recCenter.x - circlePos.x),
+		y: Math.abs(recCenter.y - circlePos.y)
+	}
+	if (delta.x > (recWidth / 2 + circleRadius)) return (false);
+	if (delta.y > (recHeight / 2 + circleRadius)) return (false);
 
-	if (dx > (recWidth / 2 + circleRadius)) return (false);
-	if (dy > (recHeight / 2 + circleRadius)) return (false);
+	if (delta.x <= (recWidth / 2)) return (true);
+	if (delta.y <= (recHeight / 2)) return (true);
 
-	if (dx <= (recWidth / 2)) return (true);
-	if (dy <= (recHeight / 2)) return (true);
-
-	const cornerDistanceSq = (dx - recWidth / 2) ** 2 + (dy - recHeight / 2) ** 2;
+	const cornerDistanceSq = (delta.x - recWidth / 2) ** 2 + (delta.y - recHeight / 2) ** 2;
 
 	return cornerDistanceSq <= (circleRadius * circleRadius);
 }
