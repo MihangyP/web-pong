@@ -100,6 +100,7 @@ function drawMenu(ctx: CanvasRenderingContext2D) {
 	const ITEM_GAP = 96;
 	const menuFont = "JetBrains Mono"
 
+	ctx.clearRect(0, 0, windowWidth, windowHeight);
 	drawTextCenterX(ctx, {x: windowWidth / 2, y: TITLE_PADDING_TOP}, menuFont, 100, "Pong", "#7de2d1");
 	let itemPosY = TITLE_PADDING_TOP + TITLE_PADDING_BOTTOM;
 	menuItems.forEach((item, i) => {
@@ -154,7 +155,8 @@ function gameLoop(now: number) {
 	requestAnimationFrame(gameLoop);
 }
 
-function playGame() {
+function playGame(ctx: CanvasRenderingContext2D) {
+	ctx.clearRect(0, 0, windowWidth, windowHeight);
 	requestAnimationFrame(gameLoop);
 }
 
@@ -162,7 +164,7 @@ function start(ctx: CanvasRenderingContext2D) {
 	if (currentScreen === 'menu') {
 		drawMenu(ctx);
 	} else if (currentScreen === 'game') {
-		playGame();
+		playGame(ctx);
 	}
 }
 
@@ -179,12 +181,31 @@ window.addEventListener("resize", () => {
 });
 
 window.addEventListener("keypress", (e) => {
-	if (e.code === 'Space') {
+	if (e.code === 'Space' && currentScreen === 'game') {
 		paused = !paused;
 	}
+	// TODO: implement later
+	//if (e.code === 'KeyT') { // toggleSreen
+	//if (currentScreen === 'menu') {
+	//currentScreen = 'game';
+	//playGame(ctx);
+	//} else if (currentScreen == 'game') {
+	//currentScreen = 'menu';
+	//drawMenu(ctx);
+	//}
+	//}
 	if (e.code === 'Enter' && currentScreen === 'menu') {
-		if (menuItemFocus === 0) {
-			playGame();
+		switch (menuItemFocus) {
+			case 0: { // Solo
+				currentScreen = 'game';
+				playGame(ctx);
+			} break;
+			case 1: { // Multiplayer
+				// TODO
+			} break;
+			case 2: { // Toogle sound
+				// TODO
+			}
 		}
 	}
 })
@@ -200,13 +221,11 @@ window.addEventListener("keydown", (e) => {
 		case 'ArrowUp': {
 			if (menuItemFocus == 0) menuItemFocus = 2;
 			else menuItemFocus -= 1;
-			ctx.clearRect(0, 0, windowWidth, windowHeight);
 			drawMenu(ctx);
 		} break;
 		case 'ArrowDown': {
 			if (menuItemFocus == 2) menuItemFocus = 0;
 			else menuItemFocus += 1;
-			ctx.clearRect(0, 0, windowWidth, windowHeight);
 			drawMenu(ctx);
 		} break;
 	}
