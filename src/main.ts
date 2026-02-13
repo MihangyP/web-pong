@@ -167,7 +167,8 @@ function playGame(ctx: CanvasRenderingContext2D, dt: number) {
 			playerPos.x += playerVelocity * dt;
 		}
 	}
-	updateBot(dt);
+	if (!paused)
+		updateBot(dt);
 	drawGame(ctx);
 }
 
