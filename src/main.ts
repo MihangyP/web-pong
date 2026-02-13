@@ -8,13 +8,15 @@ const ctx = pong.getContext("2d");
 if (ctx == null) {
 	throw new Error("Cannot support 2d platform");
 }
+const bgMenu = document.getElementById("bgMenu");
+console.log(bgMenu);
 pong.width = window.innerWidth;
 pong.height = window.innerHeight;
 
 windowWidth = ctx.canvas.width;
 windowHeight = ctx.canvas.height;
 
-type PongScreen = 'menu' | 'game';
+type PongScreen = 'menu' | 'game' | 'auth';
 
 let currentScreen: PongScreen = 'menu';
 
@@ -22,6 +24,13 @@ const bo = new Audio("./bo.mp3");
 bo.preload = "auto";
 bo.loop = true;
 bo.volume = 0.3;
+
+// for bot
+const botSpeed = 260;          // plus petit que playerVelocity
+const botPrecision = 25;       // erreur humaine (pixels)
+const botReaction = 0.15;      // temps de réaction (sec)
+let botThinkTimer = 0;
+let botTargetY = windowHeight / 2;
 
 let hasSound = true;
 const lineColor = "#fffafb";
@@ -110,15 +119,22 @@ function drawMenu(ctx: CanvasRenderingContext2D) {
 
 	bo.pause();
 	ctx.clearRect(0, 0, windowWidth, windowHeight);
-	drawTextCenterX(ctx, {x: windowWidth / 2, y: TITLE_PADDING_TOP}, menuFont, 100, "Pong", "#7de2d1");
+	drawTextCenterX(ctx, {x: windowWidth / 2, y: TITLE_PADDING_TOP}, menuFont, 69, "Pixel Pong", "#7de2d1");
 	let itemPosY = TITLE_PADDING_TOP + TITLE_PADDING_BOTTOM;
 	menuItems.forEach((item, i) => {
 		if (i === menuItemFocus) {
-			drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, menuFont, 69, item, "#339989");
+			drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, menuFont, 42, item, "#339989");
 		} else {
-			drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, menuFont, 69, item, "#fffafb");
+			drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, menuFont, 42, item, "#fffafb");
 		}
 	})
+}
+
+function drawAuth(ctx: CanvasRenderingContext2D) {
+	ctx.beginPath();
+	ctx.fillStyle = "blue";
+	ctx.rect(0, 0, windowWidth, windowHeight);
+	ctx.fill();
 }
 
 function playGame(ctx: CanvasRenderingContext2D, dt: number) {
@@ -133,7 +149,8 @@ function playGame(ctx: CanvasRenderingContext2D, dt: number) {
 			ballVelocity.y *= -1;
 		}
 
-		if (checkCollisionRecCircle(playerPos, paddleWidth, paddleHeight, ballPos, ballRadius)) {
+		if (checkCollisionRecCircle(playerPos, paddleWidth, paddleHeight, ballPos, ballRadius) ||
+			checkCollisionRecCircle(botPos, paddleWidth, paddleHeight, ballPos, ballRadius)) {
 			ballVelocity.x *= -1;
 		}
 
@@ -150,6 +167,7 @@ function playGame(ctx: CanvasRenderingContext2D, dt: number) {
 			playerPos.x += playerVelocity * dt;
 		}
 	}
+	updateBot(dt);
 	drawGame(ctx);
 }
 
@@ -174,6 +192,8 @@ function gameLoop(now: number) {
 			playGame(ctx, dt);
 		else if (currentScreen === 'menu')
 			drawMenu(ctx);
+		else if (currentScreen === 'auth')
+			drawAuth(ctx);
 	}
 	requestAnimationFrame(gameLoop);
 }
@@ -200,7 +220,7 @@ window.addEventListener("keypress", (e) => {
 			bo.play();
 	}
 	if (e.code === 'KeyT') { // toggle menu
-		if (currentScreen === 'game') {
+		if (currentScreen === 'game' || currentScreen === 'auth') {
 			currentScreen = 'menu';
 			paused = true;
 		}
@@ -213,7 +233,7 @@ window.addEventListener("keypress", (e) => {
 				currentScreen = 'game';
 			} break;
 			case 1: { // Multiplayer
-				// TODO
+				currentScreen = 'auth';
 			} break;
 			case 2: { // Toogle sound
 				if (hasSound) {
@@ -310,6 +330,57 @@ function drawTextCenterX(ctx: CanvasRenderingContext2D, pos: Vector2, fontFamily
 	ctx.font = font;
 	ctx.textAlign = "center";
 	ctx.fillText(text, pos.x, pos.y);
+}
+
+// TODO: try to understand this function
+function predictBallY(): number {
+	let simulatedY = ballPos.y;
+	let simulatedVy = ballVelocity.y;
+	let simulatedX = ballPos.x;
+	let simulatedVx = ballVelocity.x;
+
+	// simule jusqu'au mur droit
+	while (simulatedX < botPos.x) {
+		simulatedX += simulatedVx * 0.016;
+		simulatedY += simulatedVy * 0.016;
+
+		// rebond haut/bas
+		if (simulatedY <= ballRadius || simulatedY >= windowHeight - ballRadius) {
+			simulatedVy *= -1;
+		}
+	}
+
+	return simulatedY;
+}
+
+function updateBot(dt: number) {
+
+	// réagit seulement si la balle vient vers lui
+	if (ballVelocity.x <= 0) return;
+
+	botThinkTimer -= dt;
+
+	if (botThinkTimer <= 0) {
+		botThinkTimer = botReaction;
+
+		botTargetY = predictBallY();
+
+		// erreur humaine
+		botTargetY += (Math.random() * 2 - 1) * botPrecision;
+	}
+
+	const botCenter = botPos.y + paddleHeight / 2;
+	const diff = botTargetY - botCenter;
+
+	if (Math.abs(diff) > 5) {
+		if (diff >= 0)
+			botPos.y += botSpeed * dt;
+		else
+			botPos.y += -botSpeed * dt;
+	}
+
+	// clamp écran
+	botPos.y = Math.max(0, Math.min(windowHeight - paddleHeight, botPos.y));
 }
 
 function checkCollisionRecCircle(recPos: Vector2, recWidth: number, recHeight: number, circlePos: Vector2, circleRadius: number): boolean {

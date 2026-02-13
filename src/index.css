@@ -17,6 +17,6 @@ html, body {
 	display: block;
 }
 
-h1 {
-	font-family: "SuperPixel";
+#bgMenu {
+	display: none;
 }
