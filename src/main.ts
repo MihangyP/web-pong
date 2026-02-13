@@ -8,8 +8,8 @@ const ctx = pong.getContext("2d");
 if (ctx == null) {
 	throw new Error("Cannot support 2d platform");
 }
-const bgMenu = document.getElementById("bgMenu");
-console.log(bgMenu);
+const bgMenu = document.getElementById("bgMenu") as HTMLImageElement | null;
+
 pong.width = window.innerWidth;
 pong.height = window.innerHeight;
 
@@ -33,9 +33,10 @@ let botThinkTimer = 0;
 let botTargetY = windowHeight / 2;
 
 let hasSound = true;
-const lineColor = "#fffafb";
-const ballColor = "#7de2d1";
-const paddleColor = "#339989";
+const myWhite = "#E0FBFC";
+const ballColor = "#FFD166";
+const playerPaddleColor = "#00F5FF";
+const botPaddleColor = "#9B5CFF";
 const ballRadius = 10;
 let windowWasResized = false;
 const padding = 20;
@@ -74,32 +75,32 @@ let botPos = {
 	y: (windowHeight - paddleHeight) / 2,
 }
 
-let leftLineColor = lineColor;
-let rightLineColor = lineColor;
 function drawGame(ctx: CanvasRenderingContext2D) {
 	ctx.clearRect(0, 0, windowWidth, windowHeight);
 	if (pong) {
+		if (bgMenu)
+			ctx.drawImage(bgMenu, 0, 0, windowWidth, windowHeight);
 		// platform
-		drawLine(ctx, {x: windowWidth / 2, y: 0}, {x: windowWidth / 2, y: windowHeight}, lineColor);
+		drawLine(ctx, {x: windowWidth / 2, y: 0}, {x: windowWidth / 2, y: windowHeight}, myWhite);
 		// left Line
-		drawLine(ctx, {x: 0, y: 0}, {x: 0, y: windowHeight}, leftLineColor);
+		drawLine(ctx, {x: 0, y: 0}, {x: 0, y: windowHeight}, myWhite);
 		// right Line
-		drawLine(ctx, {x: windowWidth, y: 0}, {x: windowWidth, y: windowHeight}, rightLineColor);
-		drawLine(ctx, {x: 0, y: 0}, {x: windowWidth, y: 0}, lineColor);
-		drawLine(ctx, {x: 0, y: windowHeight}, {x: windowWidth, y: windowHeight}, lineColor);
+		drawLine(ctx, {x: windowWidth, y: 0}, {x: windowWidth, y: windowHeight}, myWhite);
+		drawLine(ctx, {x: 0, y: 0}, {x: windowWidth, y: 0}, myWhite);
+		drawLine(ctx, {x: 0, y: windowHeight}, {x: windowWidth, y: windowHeight}, myWhite);
 
 		// ball
 		drawCircle(ctx, ballPos, ballRadius, ballColor);
 
 		// paddles 
-		drawRectangle(ctx, playerPos, paddleWidth, paddleHeight, paddleColor);
-		drawRectangle(ctx, botPos, paddleWidth, paddleHeight, paddleColor);
+		drawRectangle(ctx, playerPos, paddleWidth, paddleHeight, playerPaddleColor);
+		drawRectangle(ctx, botPos, paddleWidth, paddleHeight, botPaddleColor);
 
 		// Pause
 		if (paused) {
 			drawText(ctx, {
 				x: windowWidth / 2, y: windowHeight / 2
-			}, "SuperPixel", 30, "Pause", "#fffafb");
+			}, "SuperPixel", 30, "Pause", "#E0FBFC");
 		}
 	}
 }
@@ -119,13 +120,16 @@ function drawMenu(ctx: CanvasRenderingContext2D) {
 
 	bo.pause();
 	ctx.clearRect(0, 0, windowWidth, windowHeight);
+	if (bgMenu) {
+		ctx.drawImage(bgMenu, 0, 0, windowWidth, windowHeight);
+	}
 	drawTextCenterX(ctx, {x: windowWidth / 2, y: TITLE_PADDING_TOP}, menuFont, 69, "Pixel Pong", "#7de2d1");
 	let itemPosY = TITLE_PADDING_TOP + TITLE_PADDING_BOTTOM;
 	menuItems.forEach((item, i) => {
 		if (i === menuItemFocus) {
 			drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, menuFont, 42, item, "#339989");
 		} else {
-			drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, menuFont, 42, item, "#fffafb");
+			drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, menuFont, 42, item, myWhite);
 		}
 	})
 }
@@ -305,8 +309,11 @@ function drawRectangle(ctx: CanvasRenderingContext2D, pos: Vector2, width: numbe
 function drawCircle(ctx: CanvasRenderingContext2D, pos: Vector2, radius: number, color: string) {
 	ctx.beginPath();
 	ctx.fillStyle = color;
+	ctx.shadowBlur = 15;
+	ctx.shadowColor = "#FFB703"; // TODO: make dynamic
 	ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI);
 	ctx.fill();
+	ctx.shadowBlur = 0;
 }
 
 function drawLine(ctx: CanvasRenderingContext2D, startPos: Vector2, endPos: Vector2, color: string) {
