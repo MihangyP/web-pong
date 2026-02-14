@@ -22,8 +22,6 @@ enum PongScreen {
 	Auth,
 }
 
-//type PongScreen = 'menu' | 'game' | 'auth';
-
 let currentScreen: PongScreen = PongScreen.Menu;
 
 const bo = new Audio("./bo.mp3");
@@ -134,7 +132,7 @@ function drawMenu(ctx: CanvasRenderingContext2D) {
 	let itemPosY = TITLE_PADDING_TOP + TITLE_PADDING_BOTTOM;
 	menuItems.forEach((item, i) => {
 		if (i === menuItemFocus) {
-			drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, menuFont, 69, item, "#339989");
+			drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, menuFont, 69, item, "#339989", true);
 		} else {
 			drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, menuFont, 69, item, myWhite);
 		}
@@ -339,12 +337,17 @@ function drawText(ctx: CanvasRenderingContext2D, pos: Vector2, fontFamily: strin
 	ctx.fillText(text, pos.x, pos.y);
 }
 
-function drawTextCenterX(ctx: CanvasRenderingContext2D, pos: Vector2, fontFamily: string, fontSize: number, text: string, color: string) {
+function drawTextCenterX(ctx: CanvasRenderingContext2D, pos: Vector2, fontFamily: string, fontSize: number, text: string, color: string, blur: boolean = false) {
 	const font = fontSize.toString() + "px " + fontFamily;
 	ctx.fillStyle = color;
+	if (blur) {
+		ctx.shadowBlur = 2;
+		ctx.shadowColor = "#5FFFE0";
+	}
 	ctx.font = font;
 	ctx.textAlign = "center";
 	ctx.fillText(text, pos.x, pos.y);
+	ctx.shadowBlur = 0;
 }
 
 // TODO: try to understand this function
