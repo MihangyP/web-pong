@@ -16,9 +16,15 @@ pong.height = window.innerHeight;
 windowWidth = ctx.canvas.width;
 windowHeight = ctx.canvas.height;
 
-type PongScreen = 'menu' | 'game' | 'auth';
+enum PongScreen {
+	Menu,
+	Game,
+	Auth,
+}
 
-let currentScreen: PongScreen = 'menu';
+//type PongScreen = 'menu' | 'game' | 'auth';
+
+let currentScreen: PongScreen = PongScreen.Menu;
 
 const bo = new Audio("./bo.mp3");
 bo.preload = "auto";
@@ -78,8 +84,9 @@ let botPos = {
 function drawGame(ctx: CanvasRenderingContext2D) {
 	ctx.clearRect(0, 0, windowWidth, windowHeight);
 	if (pong) {
-		if (bgMenu)
+		if (bgMenu) {
 			ctx.drawImage(bgMenu, 0, 0, windowWidth, windowHeight);
+		}
 		// platform
 		drawLine(ctx, {x: windowWidth / 2, y: 0}, {x: windowWidth / 2, y: windowHeight}, myWhite);
 		// left Line
@@ -100,7 +107,7 @@ function drawGame(ctx: CanvasRenderingContext2D) {
 		if (paused) {
 			drawText(ctx, {
 				x: windowWidth / 2, y: windowHeight / 2
-			}, "SuperPixel", 30, "Pause", "#E0FBFC");
+			}, "Orbitron", 42, "Pause", "#E0FBFC");
 		}
 	}
 }
@@ -108,7 +115,7 @@ function drawGame(ctx: CanvasRenderingContext2D) {
 const menuItems: string[] = [
 	"Solo",
 	"Multiplayer",
-	"Toggle Sound [on]",
+	"Music: on",
 ];
 let menuItemFocus = 0;
 
@@ -116,29 +123,29 @@ function drawMenu(ctx: CanvasRenderingContext2D) {
 	const TITLE_PADDING_TOP = 169;
 	const TITLE_PADDING_BOTTOM = 200;
 	const ITEM_GAP = 120;
-	const menuFont = "SuperPixel"
+	const menuFont = "Orbitron"
 
 	bo.pause();
 	ctx.clearRect(0, 0, windowWidth, windowHeight);
 	if (bgMenu) {
 		ctx.drawImage(bgMenu, 0, 0, windowWidth, windowHeight);
 	}
-	drawTextCenterX(ctx, {x: windowWidth / 2, y: TITLE_PADDING_TOP}, menuFont, 69, "Pixel Pong", "#7de2d1");
+	drawTextCenterX(ctx, {x: windowWidth / 2, y: TITLE_PADDING_TOP}, menuFont, 100, "Pixel Pong", "#7de2d1");
 	let itemPosY = TITLE_PADDING_TOP + TITLE_PADDING_BOTTOM;
 	menuItems.forEach((item, i) => {
 		if (i === menuItemFocus) {
-			drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, menuFont, 42, item, "#339989");
+			drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, menuFont, 69, item, "#339989");
 		} else {
-			drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, menuFont, 42, item, myWhite);
+			drawTextCenterX(ctx, {x: windowWidth / 2, y: itemPosY + i * ITEM_GAP}, menuFont, 69, item, myWhite);
 		}
 	})
 }
 
 function drawAuth(ctx: CanvasRenderingContext2D) {
-	ctx.beginPath();
-	ctx.fillStyle = "blue";
-	ctx.rect(0, 0, windowWidth, windowHeight);
-	ctx.fill();
+	if (bgMenu) {
+		ctx.drawImage(bgMenu, 0, 0, windowWidth, windowHeight);
+	}
+	drawTextCenterX(ctx, {x: windowWidth / 2, y: windowHeight / 2}, "Orbitron", 69, "Multiplayer Screen", myWhite);
 }
 
 function playGame(ctx: CanvasRenderingContext2D, dt: number) {
@@ -193,11 +200,11 @@ function gameLoop(now: number) {
 		windowWasResized = false;
 	}
 	if (ctx) {
-		if (currentScreen === 'game')
+		if (currentScreen === PongScreen.Game)
 			playGame(ctx, dt);
-		else if (currentScreen === 'menu')
+		else if (currentScreen === PongScreen.Menu)
 			drawMenu(ctx);
-		else if (currentScreen === 'auth')
+		else if (currentScreen === PongScreen.Auth)
 			drawAuth(ctx);
 	}
 	requestAnimationFrame(gameLoop);
@@ -205,7 +212,7 @@ function gameLoop(now: number) {
 requestAnimationFrame(gameLoop);
 
 window.addEventListener("click", () => {
-	if (currentScreen === 'game') {
+	if (currentScreen === PongScreen.Game) {
 		console.log(currentScreen);
 		ctx.lineWidth = 4;
 		bo.play();
@@ -217,7 +224,7 @@ window.addEventListener("resize", () => {
 });
 
 window.addEventListener("keypress", (e) => {
-	if (e.code === 'Space' && currentScreen === 'game') {
+	if (e.code === 'Space' && currentScreen === PongScreen.Game) {
 		paused = !paused;
 		if (paused)
 			bo.pause();
@@ -225,29 +232,29 @@ window.addEventListener("keypress", (e) => {
 			bo.play();
 	}
 	if (e.code === 'KeyT') { // toggle menu
-		if (currentScreen === 'game' || currentScreen === 'auth') {
-			currentScreen = 'menu';
+		if (currentScreen === PongScreen.Game || currentScreen === PongScreen.Auth) {
+			currentScreen = PongScreen.Menu;
 			paused = true;
 		}
-		else if (currentScreen === 'menu') currentScreen = 'game';
+		else if (currentScreen === PongScreen.Menu) currentScreen = PongScreen.Game;
 	}
 	// Action on Menu items
-	if (e.code === 'Enter' && currentScreen === 'menu') {
+	if (e.code === 'Enter' && currentScreen === PongScreen.Menu) {
 		switch (menuItemFocus) {
 			case 0: { // Solo
-				currentScreen = 'game';
+				currentScreen = PongScreen.Game;
 			} break;
 			case 1: { // Multiplayer
-				currentScreen = 'auth';
+				currentScreen = PongScreen.Auth;
 			} break;
 			case 2: { // Toogle sound
 				if (hasSound) {
 					bo.pause();
 					bo.currentTime = 0;
-					menuItems[2] = "Toggle Sound [off]";
+					menuItems[2] = "Music: off";
 					hasSound = false;
 				} else {
-					menuItems[2] = "Toggle Sound [on]"
+					menuItems[2] = "Music: on";
 					hasSound = true;
 				}
 			}

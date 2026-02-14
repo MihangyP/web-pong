@@ -3,6 +3,11 @@
 	src: url('SuperPixel.ttf');
 }
 
+@font-face {
+	font-family: 'Orbitron';
+	src: url('Orbitron.ttf');
+}
+
 html, body {
 	width: 100%;
 	height: 100%;
